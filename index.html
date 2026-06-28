@@ -1,8 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Allow standalone mode on iPhone -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
   <script src="https://unpkg.com/html5-qrcode"></script>
+
   <style>
     body { font-family: Arial; text-align: center; padding: 20px; }
     #reader { width: 100%; max-width: 400px; margin: auto; }
@@ -14,33 +24,35 @@
 <div id="reader"></div>
 
 <script>
+  // Redirect back to Apps Script after scanning
   function onScanSuccess(decodedText) {
     window.location.href =
       "https://script.google.com/macros/s/AKfycbxnnc3NemLijQLfLUB0jwtGGLFllzy2Xmfg_N2Z8g5Rh03nTaK881Rgiig6oGWbN94c/exec?asset=" 
       + encodeURIComponent(decodedText);
   }
 
+  // Start camera
   Html5Qrcode.getCameras().then(cameras => {
     if (cameras.length === 0) {
-      alert("No camera found on this device.");
+      alert("No camera found.");
       return;
     }
 
     const html5QrCode = new Html5Qrcode("reader");
-
     html5QrCode.start(
       cameras[0].id,
       { fps: 10, qrbox: 250 },
       onScanSuccess
-    ).catch(err => {
-      alert("Camera start error: " + err);
-    });
+    ).catch(err => alert("Camera start error: " + err));
+  }).catch(err => alert("Camera access error: " + err));
 
-  }).catch(err => {
-    alert("Camera access error: " + err);
-  });
+  // Register service worker for PWA
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
 </script>
 
 </body>
 </html>
+
 
